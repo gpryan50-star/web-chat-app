@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <h2>Enter Username</h2>
+  <form method="POST">
+    <input name="username" placeholder="Username" required /><br><br>
+    <input type="password" name="password" placeholder="Password" required /><br><br>
+    <button>Join Chat</button>
+  </form>
+
+</body>
+</html>
