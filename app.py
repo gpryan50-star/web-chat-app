@@ -112,5 +112,6 @@ def typing():
 # ===== RUN =====
 
 if __name__ == "__main__":
-    db.create_all()  # create tables if they don't exist
+    with app.app_context():
+        db.create_all()
     socketio.run(app, host="0.0.0.0", port=10000)
