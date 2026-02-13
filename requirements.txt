@@ -2,3 +2,5 @@ flask
 flask-socketio
 eventlet
 flask-sqlalchemy
+flask-login
+werkzeug
