@@ -8,50 +8,63 @@
 </head>
 <body>
 
-<div id="chat">
-  {% for m in messages %}
-    <div class="bubble {{ 'me' if m.user == username else 'other' }}">
-      <b>{{ m.user }}</b><br>{{ m.text }}
-      <span>{{ m.time }}</span>
-    </div>
-  {% endfor %}
-</div>
+  <div id="chat">
+    {% for m in messages %}
+      <div class="bubble {{ 'me' if m.user == username else 'other' }}">
+        <b>{{ m.user }}</b><br>{{ m.text }}
+        <span>{{ m.time }}</span>
+      </div>
+    {% endfor %}
+  </div>
 
-<div id="typing"></div>
+  <div id="typing"></div>
 
-<div id="input">
-  <input id="msg" placeholder="Type..." oninput="typing()" />
-  <button onclick="send()">Send</button>
-</div>
+  <div id="input">
+    <input id="msg" placeholder="Type..." oninput="typing()" />
+    <button onclick="send()">Send</button>
+  </div>
 
-<script>
-const socket = io();
+  <script>
+    const socket = io();
 
-socket.on("message", data => {
-  const div = document.createElement("div");
-  div.className = "bubble " + (data.user === "{{username}}" ? "me" : "other");
-  div.innerHTML = `<b>${data.user}</b><br>${data.text}<span>${data.time}</span>`;
-  document.getElementById("chat").appendChild(div);
-  document.getElementById("chat").scrollTop = 99999;
-});
+    socket.on("connect", () => {
+      console.log("Connected to server");
+    });
 
-socket.on("typing", user => {
-  document.getElementById("typing").innerText = `${user} is typing...`;
-  setTimeout(() => document.getElementById("typing").innerText = "", 1000);
-});
+    socket.on("chat_message", data => {
+      const div = document.createElement("div");
+      div.className = "bubble " + (data.user === "{{ username }}" ? "me" : "other");
+      div.innerHTML = `<b>${data.user}</b><br>${data.text}<span>${data.time}</span>`;
+      document.getElementById("chat").appendChild(div);
+      document.getElementById("chat").scrollTop = 99999;
+    });
 
-function send() {
-  const input = document.getElementById("msg");
-  if (input.value.trim()) {
-    socket.send(input.value);
-    input.value = "";
-  }
-}
+    socket.on("status", msg => {
+      const div = document.createElement("div");
+      div.className = "status";
+      div.innerText = msg;
+      document.getElementById("chat").appendChild(div);
+    });
 
-function typing() {
-  socket.emit("typing");
-}
-</script>
+    socket.on("typing", user => {
+      document.getElementById("typing").innerText = `${user} is typing...`;
+      setTimeout(() => {
+        document.getElementById("typing").innerText = "";
+      }, 1000);
+    });
+
+    function send() {
+      const input = document.getElementById("msg");
+      if (input.value.trim()) {
+        socket.emit("chat_message", input.value);
+        input.value = "";
+      }
+    }
+
+    function typing() {
+      socket.emit("typing");
+    }
+  </script>
 
 </body>
 </html>

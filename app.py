@@ -35,7 +35,7 @@ class Message(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 
 # ===== ROUTES =====
@@ -80,10 +80,11 @@ users_online = {}
 
 @socketio.on("connect")
 def connect():
-    if current_user.is_authenticated:
-        users_online[request.sid] = current_user.username
-        emit("status", f"{current_user.username} joined", broadcast=True)
+    if not current_user.is_authenticated:
+        return False  # reject socket connection
 
+    users_online[request.sid] = current_user.username
+    emit("status", f"{current_user.username} joined", broadcast=True)
 
 @socketio.on("disconnect")
 def disconnect():
@@ -92,7 +93,7 @@ def disconnect():
         emit("status", f"{username} left", broadcast=True)
 
 
-@socketio.on("message")
+@socketio.on("chat_message")
 def handle_message(msg):
     data = {
         "user": current_user.username,
