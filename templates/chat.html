@@ -20,8 +20,13 @@
   <div id="typing"></div>
 
   <div id="input">
-    <input id="msg" placeholder="Type..." oninput="typing()" />
-    <button onclick="send()">Send</button>
+    <input
+      id="msg"
+      placeholder="Type..."
+      oninput="typing()"
+      onkeydown="if (event.key === 'Enter') send()"
+  />
+  <button onclick="send()">Send</button>
   </div>
 
   <script>
