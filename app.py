@@ -98,14 +98,25 @@ def disconnect():
 
 @socketio.on("chat_message")
 def handle_message(msg):
+    if not current_user.is_authenticated:
+        return
+
     data = {
         "user": current_user.username,
         "text": msg,
         "time": datetime.now().strftime("%H:%M")
     }
-    db.session.add(Message(user=data["user"], text=data["text"], timestamp=data["time"]))
+
+    db.session.add(
+        Message(
+            user=data["user"],
+            text=data["text"],
+            timestamp=data["time"]
+        )
+    )
     db.session.commit()
-    emit("message", data, broadcast=True)
+
+    emit("chat_message", data, broadcast=True)
 
 
 @socketio.on("typing")
