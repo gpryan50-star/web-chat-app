@@ -120,9 +120,9 @@ def handle_message(msg):
 
 
 @socketio.on("typing")
-def typing():
-    emit("typing", current_user.username, broadcast=True, include_self=False)
-
+def handle_typing():
+    if current_user.is_authenticated:
+        emit("typing", current_user.username, broadcast=True, include_self=False)
 
 # ===== RUN =====
 
