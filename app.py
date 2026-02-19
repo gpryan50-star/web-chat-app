@@ -15,6 +15,9 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
+# debug line
+
+app.config["DEBUG"] = True
 
 # ===== DATABASE MODELS =====
 
@@ -115,4 +118,4 @@ def typing():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    socketio.run(app, host="0.0.0.0", port=10000)
+    socketio.run(app, host="0.0.0.0", port=10000, debug=True)
