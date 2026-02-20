@@ -12,9 +12,19 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["DEBUG"] = True
 
 db = SQLAlchemy(app)
-socketio = SocketIO(app, cors_allowed_origins="*")
+
+# Render requires eventlet + explicit ping settings
+socketio = SocketIO(
+    app,
+    cors_allowed_origins="*",
+    ping_timeout=60,
+    ping_interval=25,
+    async_mode="eventlet"
+)
+
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
+
 
 # ===== DATABASE MODELS =====
 
@@ -49,14 +59,11 @@ def login():
         user = User.query.filter_by(username=username).first()
 
         if user:
-            # User exists → check password
             if check_password_hash(user.password_hash, password):
                 login_user(user)
                 return redirect("/chat")
-            else:
-                return "Incorrect password", 401
+            return "Incorrect password", 401
 
-        # User does not exist → create new account
         new_user = User(username=username, password_hash=generate_password_hash(password))
         db.session.add(new_user)
         db.session.commit()
@@ -64,7 +71,6 @@ def login():
         return redirect("/chat")
 
     return render_template("login.html")
-
 
 
 @app.route("/chat")
@@ -87,11 +93,14 @@ users_online = {}
 
 @socketio.on("connect")
 def connect():
+    print("Socket connect attempt:", request.args)
     username = request.args.get("username")
     if not username:
-        return False  # reject socket connection
+        print("Rejected: no username")
+        return False
 
     users_online[request.sid] = username
+    print("Connected:", username)
     emit("status", f"{username} joined", broadcast=True)
 
 

@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: web-chat-app
+    env: python
+    plan: free
+    region: oregon
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python app.py"
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12
+    websocket: true

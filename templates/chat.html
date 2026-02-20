@@ -30,8 +30,9 @@
   </div>
 
   <script>
-    // Pass username to server so Socket.IO can authenticate
-    const socket = io({
+    const socket = io("https://web-chat-app-frdo.onrender.com", {
+      transports: ["websocket"],
+      upgrade: false,
       query: { username: "{{ username }}" }
     });
 
