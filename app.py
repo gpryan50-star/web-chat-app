@@ -1,7 +1,14 @@
 from flask import Flask, render_template, request, redirect
 from flask_socketio import SocketIO, emit
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
+from flask_login import (
+    LoginManager,
+    UserMixin,
+    login_user,
+    logout_user,
+    current_user,
+    login_required,
+)
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
@@ -13,13 +20,13 @@ app.config["DEBUG"] = True
 
 db = SQLAlchemy(app)
 
-# Render requires eventlet + explicit ping settings
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",
     ping_timeout=60,
     ping_interval=25,
-    async_mode="eventlet"
+    async_mode="eventlet",
+    manage_session=False,  # critical for Flask 3 + Flask-SocketIO
 )
 
 login_manager = LoginManager(app)
@@ -91,10 +98,12 @@ def logout():
 
 users_online = {}
 
+
 @socketio.on("connect")
 def connect():
     print("Socket connect attempt:", request.args)
     username = request.args.get("username")
+
     if not username:
         print("Rejected: no username")
         return False
@@ -120,14 +129,14 @@ def handle_message(msg):
     data = {
         "user": username,
         "text": msg,
-        "time": datetime.now().strftime("%H:%M")
+        "time": datetime.now().strftime("%H:%M"),
     }
 
     db.session.add(
         Message(
             user=data["user"],
             text=data["text"],
-            timestamp=data["time"]
+            timestamp=data["time"],
         )
     )
     db.session.commit()
