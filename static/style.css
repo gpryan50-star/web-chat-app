@@ -2,10 +2,31 @@
 
 body {
     font-family: Arial, sans-serif;
-    background: #f0f2f5;
+    background: var(--bg);
     margin: 0;
-    padding: 20px;
-    color: #333;
+    padding: 0;
+    color: var(--text);
+    transition: background 0.3s, color 0.3s;
+}
+
+:root {
+    --bg: #f0f2f5;
+    --card: #ffffff;
+    --text: #333;
+    --bubble-me: #d1e7ff;
+    --bubble-other: #e9ecef;
+    --nav: #ffffff;
+    --nav-border: #ddd;
+}
+
+body.dark {
+    --bg: #1e1e1e;
+    --card: #2a2a2a;
+    --text: #e6e6e6;
+    --bubble-me: #005bbb;
+    --bubble-other: #3a3a3a;
+    --nav: #2a2a2a;
+    --nav-border: #444;
 }
 
 a {
@@ -17,19 +38,29 @@ a:hover {
     text-decoration: underline;
 }
 
-h2 {
-    margin-top: 0;
+/* ===== NAVIGATION BAR ===== */
+
+.navbar {
+    background: var(--nav);
+    border-bottom: 1px solid var(--nav-border);
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-/* ===== NAV LINKS ===== */
-
-.nav {
-    margin-bottom: 20px;
-}
-
-.nav a {
+.navbar a {
     margin-right: 15px;
     font-weight: bold;
+}
+
+.toggle-dark {
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: #007bff;
+    color: white;
+    font-size: 14px;
 }
 
 /* ===== CHAT PAGE ===== */
@@ -38,9 +69,10 @@ h2 {
     height: 70vh;
     overflow-y: auto;
     padding: 15px;
-    background: white;
+    background: var(--card);
     border-radius: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--nav-border);
+    margin: 20px;
 }
 
 .bubble {
@@ -50,18 +82,28 @@ h2 {
     border-radius: 12px;
     position: relative;
     line-height: 1.4;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
 }
 
 .bubble.me {
-    background: #d1e7ff;
+    background: var(--bubble-me);
     margin-left: auto;
     border-bottom-right-radius: 0;
 }
 
 .bubble.other {
-    background: #e9ecef;
+    background: var(--bubble-other);
     margin-right: auto;
     border-bottom-left-radius: 0;
+}
+
+.bubble img.avatar-chat {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 .bubble span {
@@ -75,7 +117,7 @@ h2 {
 /* ===== INPUT BAR ===== */
 
 #input {
-    margin-top: 15px;
+    margin: 20px;
     display: flex;
     gap: 10px;
 }
@@ -84,7 +126,9 @@ h2 {
     flex: 1;
     padding: 12px;
     border-radius: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--nav-border);
+    background: var(--card);
+    color: var(--text);
 }
 
 button {
@@ -101,6 +145,37 @@ button:hover {
     background: #0056b3;
 }
 
+/* ===== TYPING INDICATOR ===== */
+
+#typing {
+    margin-left: 25px;
+    font-size: 14px;
+    color: #888;
+    height: 20px;
+}
+
+.typing-dots::after {
+    content: "...";
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0% { opacity: 0.2; }
+    50% { opacity: 1; }
+    100% { opacity: 0.2; }
+}
+
+/* ===== ONLINE DOT ===== */
+
+.online-dot {
+    width: 10px;
+    height: 10px;
+    background: #28a745;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 6px;
+}
+
 /* ===== HOMEPAGE USER CARDS ===== */
 
 .profile-card {
@@ -108,10 +183,10 @@ button:hover {
     align-items: center;
     gap: 15px;
     padding: 12px;
-    margin-bottom: 12px;
-    background: white;
+    margin: 15px;
+    background: var(--card);
     border-radius: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--nav-border);
 }
 
 .avatar {
@@ -125,12 +200,12 @@ button:hover {
 
 .profile {
     text-align: center;
-    background: white;
+    background: var(--card);
     padding: 25px;
     border-radius: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--nav-border);
     max-width: 400px;
-    margin: auto;
+    margin: 30px auto;
 }
 
 .avatar-large {
@@ -144,19 +219,20 @@ button:hover {
 /* ===== EDIT PROFILE ===== */
 
 form {
-    background: white;
+    background: var(--card);
     padding: 20px;
     border-radius: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--nav-border);
     max-width: 400px;
-    margin: auto;
+    margin: 30px auto;
 }
 
 textarea, input {
     width: 100%;
     padding: 10px;
     border-radius: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--nav-border);
+    background: var(--card);
+    color: var(--text);
     margin-bottom: 15px;
 }
-
