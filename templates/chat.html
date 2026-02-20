@@ -12,7 +12,7 @@
     {% for m in messages %}
       <div class="bubble {{ 'me' if m.user == username else 'other' }}">
         <b>{{ m.user }}</b><br>{{ m.text }}
-        <span>{{ m.time }}</span>
+        <span>{{ m.timestamp }}</span>
       </div>
     {% endfor %}
   </div>
@@ -25,12 +25,15 @@
       placeholder="Type..."
       oninput="typing()"
       onkeydown="if (event.key === 'Enter') send()"
-  />
-  <button onclick="send()">Send</button>
+    />
+    <button onclick="send()">Send</button>
   </div>
 
   <script>
-    const socket = io();
+    // Pass username to server so Socket.IO can authenticate
+    const socket = io({
+      query: { username: "{{ username }}" }
+    });
 
     socket.on("connect", () => {
       console.log("Connected to server");
@@ -41,7 +44,9 @@
       div.className = "bubble " + (data.user === "{{ username }}" ? "me" : "other");
       div.innerHTML = `<b>${data.user}</b><br>${data.text}<span>${data.time}</span>`;
       document.getElementById("chat").appendChild(div);
-      document.getElementById("chat").scrollTop = 99999;
+
+      const chat = document.getElementById("chat");
+      chat.scrollTop = chat.scrollHeight;
     });
 
     socket.on("status", msg => {
@@ -59,11 +64,10 @@
     });
 
     function send() {
-      const input = document.getElementById("msg");
-      if (input.value.trim()) {
-        socket.emit("chat_message", input.value);
-        input.value = "";
-      }
+      const msg = document.getElementById("msg").value;
+      if (msg.trim() === "") return;
+      socket.emit("chat_message", msg);
+      document.getElementById("msg").value = "";
     }
 
     function typing() {

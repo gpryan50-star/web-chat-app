@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect
 from flask_socketio import SocketIO, emit
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
@@ -9,15 +9,12 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "supersecret"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///chat.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["DEBUG"] = True
 
 db = SQLAlchemy(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
-
-# debug line
-
-app.config["DEBUG"] = True
 
 # ===== DATABASE MODELS =====
 
@@ -48,17 +45,20 @@ def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
+
         user = User.query.filter_by(username=username).first()
+
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
             return redirect("/chat")
-        else:
-            # create new user if doesn't exist
-            new_user = User(username=username, password_hash=generate_password_hash(password))
-            db.session.add(new_user)
-            db.session.commit()
-            login_user(new_user)
-            return redirect("/chat")
+
+        # Create new user
+        new_user = User(username=username, password_hash=generate_password_hash(password))
+        db.session.add(new_user)
+        db.session.commit()
+        login_user(new_user)
+        return redirect("/chat")
+
     return render_template("login.html")
 
 
@@ -80,14 +80,15 @@ def logout():
 
 users_online = {}
 
-
 @socketio.on("connect")
 def connect():
-    if not current_user.is_authenticated:
+    username = request.args.get("username")
+    if not username:
         return False  # reject socket connection
 
-    users_online[request.sid] = current_user.username
-    emit("status", f"{current_user.username} joined", broadcast=True)
+    users_online[request.sid] = username
+    emit("status", f"{username} joined", broadcast=True)
+
 
 @socketio.on("disconnect")
 def disconnect():
@@ -98,11 +99,12 @@ def disconnect():
 
 @socketio.on("chat_message")
 def handle_message(msg):
-    if not current_user.is_authenticated:
+    username = users_online.get(request.sid)
+    if not username:
         return
 
     data = {
-        "user": current_user.username,
+        "user": username,
         "text": msg,
         "time": datetime.now().strftime("%H:%M")
     }
@@ -121,8 +123,10 @@ def handle_message(msg):
 
 @socketio.on("typing")
 def handle_typing():
-    if current_user.is_authenticated:
-        emit("typing", current_user.username, broadcast=True, include_self=False)
+    username = users_online.get(request.sid)
+    if username:
+        emit("typing", username, broadcast=True, include_self=False)
+
 
 # ===== RUN =====
 
