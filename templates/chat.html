@@ -8,73 +8,56 @@
 </head>
 <body>
 
-  <div id="chat">
-    {% for m in messages %}
-      <div class="bubble {{ 'me' if m.user == username else 'other' }}">
-        <b>{{ m.user }}</b><br>{{ m.text }}
-        <span>{{ m.timestamp }}</span>
-      </div>
-    {% endfor %}
-  </div>
+<a href="/home">Home</a> | <a href="/logout">Logout</a>
 
-  <div id="typing"></div>
+<div id="chat">
+  {% for m in messages %}
+    <div class="bubble {{ 'me' if m.user == username else 'other' }}">
+      <b><a href="/profile/{{ m.user }}">{{ m.user }}</a></b><br>
+      {{ m.text }}
+      <span>{{ m.timestamp }}</span>
+    </div>
+  {% endfor %}
+</div>
 
-  <div id="input">
-    <input
-      id="msg"
-      placeholder="Type..."
-      oninput="typing()"
-      onkeydown="if (event.key === 'Enter') send()"
-    />
-    <button onclick="send()">Send</button>
-  </div>
+<div id="typing"></div>
 
-  <script>
-    const socket = io("https://web-chat-app-frdo.onrender.com", {
-      transports: ["websocket"],
-      upgrade: false,
-      query: { username: "{{ username }}" }
-    });
+<div id="input">
+  <input
+    id="msg"
+    placeholder="Type..."
+    oninput="typing()"
+    onkeydown="if (event.key === 'Enter') send()"
+  />
+  <button onclick="send()">Send</button>
+</div>
 
-    socket.on("connect", () => {
-      console.log("Connected to server");
-    });
+<script>
+  const socket = io("https://web-chat-app-frdo.onrender.com", {
+    transports: ["websocket"],
+    upgrade: false,
+    query: { username: "{{ username }}" }
+  });
 
-    socket.on("chat_message", data => {
-      const div = document.createElement("div");
-      div.className = "bubble " + (data.user === "{{ username }}" ? "me" : "other");
-      div.innerHTML = `<b>${data.user}</b><br>${data.text}<span>${data.time}</span>`;
-      document.getElementById("chat").appendChild(div);
+  socket.on("chat_message", data => {
+    const div = document.createElement("div");
+    div.className = "bubble " + (data.user === "{{ username }}" ? "me" : "other");
+    div.innerHTML = `<b><a href="/profile/${data.user}">${data.user}</a></b><br>${data.text}<span>${data.time}</span>`;
+    document.getElementById("chat").appendChild(div);
+    document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
+  });
 
-      const chat = document.getElementById("chat");
-      chat.scrollTop = chat.scrollHeight;
-    });
+  function send() {
+    const msg = document.getElementById("msg").value;
+    if (msg.trim() === "") return;
+    socket.emit("chat_message", msg);
+    document.getElementById("msg").value = "";
+  }
 
-    socket.on("status", msg => {
-      const div = document.createElement("div");
-      div.className = "status";
-      div.innerText = msg;
-      document.getElementById("chat").appendChild(div);
-    });
-
-    socket.on("typing", user => {
-      document.getElementById("typing").innerText = `${user} is typing...`;
-      setTimeout(() => {
-        document.getElementById("typing").innerText = "";
-      }, 1000);
-    });
-
-    function send() {
-      const msg = document.getElementById("msg").value;
-      if (msg.trim() === "") return;
-      socket.emit("chat_message", msg);
-      document.getElementById("msg").value = "";
-    }
-
-    function typing() {
-      socket.emit("typing");
-    }
-  </script>
+  function typing() {
+    socket.emit("typing");
+  }
+</script>
 
 </body>
 </html>

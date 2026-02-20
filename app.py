@@ -26,7 +26,7 @@ socketio = SocketIO(
     ping_timeout=60,
     ping_interval=25,
     async_mode="eventlet",
-    manage_session=False,  # critical for Flask 3 + Flask-SocketIO
+    manage_session=False
 )
 
 login_manager = LoginManager(app)
@@ -39,6 +39,11 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True)
     password_hash = db.Column(db.String(128))
+
+    # Profile fields
+    bio = db.Column(db.Text, default="Hey, I'm new here!")
+    avatar = db.Column(db.String(255), default="/static/default.png")
+    joined = db.Column(db.String(20), default=datetime.now().strftime("%Y-%m-%d"))
 
 
 class Message(db.Model):
@@ -68,16 +73,42 @@ def login():
         if user:
             if check_password_hash(user.password_hash, password):
                 login_user(user)
-                return redirect("/chat")
+                return redirect("/home")
             return "Incorrect password", 401
 
         new_user = User(username=username, password_hash=generate_password_hash(password))
         db.session.add(new_user)
         db.session.commit()
         login_user(new_user)
-        return redirect("/chat")
+        return redirect("/home")
 
     return render_template("login.html")
+
+
+@app.route("/home")
+@login_required
+def home():
+    users = User.query.all()
+    return render_template("home.html", users=users)
+
+
+@app.route("/profile/<username>")
+@login_required
+def profile(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    return render_template("profile.html", user=user)
+
+
+@app.route("/edit-profile", methods=["GET", "POST"])
+@login_required
+def edit_profile():
+    if request.method == "POST":
+        current_user.bio = request.form["bio"]
+        current_user.avatar = request.form["avatar"]
+        db.session.commit()
+        return redirect(f"/profile/{current_user.username}")
+
+    return render_template("edit_profile.html", user=current_user)
 
 
 @app.route("/chat")
@@ -101,15 +132,12 @@ users_online = {}
 
 @socketio.on("connect")
 def connect():
-    print("Socket connect attempt:", request.args)
     username = request.args.get("username")
 
     if not username:
-        print("Rejected: no username")
         return False
 
     users_online[request.sid] = username
-    print("Connected:", username)
     emit("status", f"{username} joined", broadcast=True)
 
 

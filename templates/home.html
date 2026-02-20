@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Home</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .profile-card {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #f5f5f5;
+      border-radius: 8px;
+    }
+    .avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+
+<h2>All Users</h2>
+
+{% for u in users %}
+  <div class="profile-card">
+    <img src="{{ u.avatar }}" class="avatar">
+    <div>
+      <a href="/profile/{{ u.username }}"><b>{{ u.username }}</b></a><br>
+      <small>{{ u.bio[:60] }}...</small>
+    </div>
+  </div>
+{% endfor %}
+
+<br>
+<a href="/chat">Go to Chat</a>
+
+</body>
+</html>
