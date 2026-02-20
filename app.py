@@ -48,11 +48,15 @@ def login():
 
         user = User.query.filter_by(username=username).first()
 
-        if user and check_password_hash(user.password_hash, password):
-            login_user(user)
-            return redirect("/chat")
+        if user:
+            # User exists → check password
+            if check_password_hash(user.password_hash, password):
+                login_user(user)
+                return redirect("/chat")
+            else:
+                return "Incorrect password", 401
 
-        # Create new user
+        # User does not exist → create new account
         new_user = User(username=username, password_hash=generate_password_hash(password))
         db.session.add(new_user)
         db.session.commit()
@@ -60,6 +64,7 @@ def login():
         return redirect("/chat")
 
     return render_template("login.html")
+
 
 
 @app.route("/chat")
