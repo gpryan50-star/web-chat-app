@@ -177,6 +177,24 @@ def new_chat():
     return redirect(f"/chat/{chat.id}")
 
 
+@app.route("/chat")
+@login_required
+def chat_list():
+    chats = (
+        db.session.query(Chat)
+        .join(ChatUser)
+        .filter(ChatUser.user_id == current_user.id)
+        .all()
+    )
+    return render_template(
+        "chat.html",
+        username=current_user.username,
+        chats=chats,
+        messages=[],
+        chat_id=None
+    )
+
+
 @socketio.on("join_chat")
 def join(chat_id):
     join_room(str(chat_id))
