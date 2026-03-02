@@ -236,3 +236,17 @@ textarea, input {
     color: var(--text);
     margin-bottom: 15px;
 }
+
+.topbar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  padding: 16px 24px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #4ea1ff;
+}
+
+.logo {
+  cursor: default;
+}

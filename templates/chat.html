@@ -1,65 +1,112 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Chat</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Socket.IO -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+  <!-- Styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
+
 <body>
 
-<a href="/home">Home</a> | <a href="/logout">Logout</a>
+<!-- Top bar -->
+<header class="topbar">
+  <div class="logo">💬 Chatly</div>
+</header>
 
-<div id="chat">
-  {% for m in messages %}
-    <div class="bubble {{ 'me' if m.user == username else 'other' }}">
-      <b><a href="/profile/{{ m.user }}">{{ m.user }}</a></b><br>
-      {{ m.text }}
-      <span>{{ m.timestamp }}</span>
+<div class="container">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h3>Chats</h3>
+
+    {% for c in chats %}
+      <a href="/chat/{{ c.id }}" class="chat-link {% if c.id == chat_id %}active{% endif %}">
+        Chat {{ c.id }}
+      </a>
+    {% endfor %}
+
+    <form action="/new_chat" method="POST" class="new-chat-form">
+      <input name="username" placeholder="Start chat with..." required />
+      <button type="submit">New</button>
+    </form>
+  </aside>
+
+  <!-- Chat area -->
+  <main class="chat-area">
+
+    <div id="chat" class="chat-box">
+      {% for m in messages %}
+        <div class="bubble {% if m.user == username %}me{% else %}other{% endif %}">
+          <b>{{ m.user }}</b><br>
+          {{ m.text }}
+          <span>{{ m.timestamp }}</span>
+        </div>
+      {% endfor %}
     </div>
-  {% endfor %}
+
+    <div id="typing" class="typing"></div>
+
+    <div class="input-bar">
+      <input
+        id="msg"
+        placeholder="Type a message..."
+        oninput="typing()"
+        onkeydown="if (event.key === 'Enter') send()"
+      />
+      <button onclick="send()">Send</button>
+    </div>
+
+  </main>
 </div>
 
-<div id="typing"></div>
-
-<div id="input">
-  <input
-    id="msg"
-    placeholder="Type..."
-    oninput="typing()"
-    onkeydown="if (event.key === 'Enter') send()"
-  />
-  <button onclick="send()">Send</button>
-</div>
-
+<!-- Socket logic -->
 <script>
-  const socket = io("https://web-chat-app-frdo.onrender.com", {
-    transports: ["websocket"],
-    upgrade: false,
-    query: { username: "{{ username }}" }
+  const socket = io();
+  const CHAT_ID = "{{ chat_id }}";
+
+  socket.on("connect", () => {
+    socket.emit("join_chat", CHAT_ID);
   });
 
   socket.on("chat_message", data => {
     const div = document.createElement("div");
     div.className = "bubble " + (data.user === "{{ username }}" ? "me" : "other");
-    div.innerHTML = `<b><a href="/profile/${data.user}">${data.user}</a></b><br>${data.text}<span>${data.time}</span>`;
+    div.innerHTML = `
+      <b>${data.user}</b><br>
+      ${data.text}
+      <span>${data.time}</span>
+    `;
     document.getElementById("chat").appendChild(div);
-    document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
+    document.getElementById("chat").scrollTop =
+      document.getElementById("chat").scrollHeight;
+  });
+
+  socket.on("typing", user => {
+    const el = document.getElementById("typing");
+    el.innerText = `${user} is typing...`;
+    setTimeout(() => el.innerText = "", 1000);
   });
 
   function send() {
-    const msg = document.getElementById("msg").value;
-    if (msg.trim() === "") return;
-    socket.emit("chat_message", msg);
-    document.getElementById("msg").value = "";
+    const input = document.getElementById("msg");
+    if (!input.value.trim()) return;
+
+    socket.emit("chat_message", {
+      chat_id: CHAT_ID,
+      text: input.value
+    });
+
+    input.value = "";
   }
 
   function typing() {
     socket.emit("typing");
-  }
-
-  function toggleDark() {
-    document.body.classList.toggle("dark");
   }
 </script>
 

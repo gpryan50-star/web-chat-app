@@ -11,6 +11,7 @@ from flask_login import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from flask_socketio import join_room
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "supersecret"
@@ -48,9 +49,20 @@ class User(UserMixin, db.Model):
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    chat_id = db.Column(db.Integer, db.ForeignKey("chat.id"))
     user = db.Column(db.String(80))
     text = db.Column(db.Text)
     timestamp = db.Column(db.String(20))
+
+
+class Chat(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+
+class ChatUser(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    chat_id = db.Column(db.Integer, db.ForeignKey("chat.id"))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
 
 # ===== LOGIN MANAGER =====
@@ -111,11 +123,63 @@ def edit_profile():
     return render_template("edit_profile.html", user=current_user)
 
 
-@app.route("/chat")
+@app.route("/chat/<int:chat_id>")
 @login_required
-def chat():
-    messages = Message.query.order_by(Message.id).all()
-    return render_template("chat.html", username=current_user.username, messages=messages)
+def chat(chat_id):
+    messages = Message.query.filter_by(chat_id=chat_id).all()
+    chats = (
+        db.session.query(Chat)
+        .join(ChatUser)
+        .filter(ChatUser.user_id == current_user.id)
+        .all()
+    )
+    return render_template(
+        "chat.html",
+        username=current_user.username,
+        messages=messages,
+        chat_id=chat_id,
+        chats=chats
+    )
+
+
+@app.route("/new_chat", methods=["POST"])
+@login_required
+def new_chat():
+    username = request.form["username"]
+    other = User.query.filter_by(username=username).first()
+
+    if not other or other.id == current_user.id:
+        return redirect("/chat")
+
+    # Check if chat already exists
+    existing = (
+        db.session.query(Chat)
+        .join(ChatUser)
+        .filter(ChatUser.user_id.in_([current_user.id, other.id]))
+        .group_by(Chat.id)
+        .having(db.func.count(Chat.id) == 2)
+        .first()
+    )
+
+    if existing:
+        return redirect(f"/chat/{existing.id}")
+
+    chat = Chat()
+    db.session.add(chat)
+    db.session.commit()
+
+    db.session.add_all([
+        ChatUser(chat_id=chat.id, user_id=current_user.id),
+        ChatUser(chat_id=chat.id, user_id=other.id)
+    ])
+    db.session.commit()
+
+    return redirect(f"/chat/{chat.id}")
+
+
+@socketio.on("join_chat")
+def join(chat_id):
+    join_room(str(chat_id))
 
 
 @app.route("/logout")
@@ -149,27 +213,23 @@ def disconnect():
 
 
 @socketio.on("chat_message")
-def handle_message(msg):
-    username = users_online.get(request.sid)
-    if not username:
-        return
+def handle_message(data):
+    chat_id = data["chat_id"]
 
-    data = {
-        "user": username,
-        "text": msg,
-        "time": datetime.now().strftime("%H:%M"),
-    }
-
-    db.session.add(
-        Message(
-            user=data["user"],
-            text=data["text"],
-            timestamp=data["time"],
-        )
+    msg = Message(
+        chat_id=chat_id,
+        user=current_user.username,
+        text=data["text"],
+        timestamp=datetime.now().strftime("%H:%M")
     )
+    db.session.add(msg)
     db.session.commit()
 
-    emit("chat_message", data, broadcast=True)
+    emit("chat_message", {
+        "user": msg.user,
+        "text": msg.text,
+        "time": msg.timestamp
+    }, room=str(chat_id))
 
 
 @socketio.on("typing")
