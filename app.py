@@ -233,10 +233,14 @@ def disconnect():
 @socketio.on("chat_message")
 def handle_message(data):
     chat_id = data["chat_id"]
+    username = users_online.get(request.sid)
+
+    if not username:
+        return  # socket not authenticated
 
     msg = Message(
         chat_id=chat_id,
-        user=current_user.username,
+        user=username,
         text=data["text"],
         timestamp=datetime.now().strftime("%H:%M")
     )
@@ -248,6 +252,8 @@ def handle_message(data):
         "text": msg.text,
         "time": msg.timestamp
     }, room=str(chat_id))
+
+
 
 
 @socketio.on("typing")

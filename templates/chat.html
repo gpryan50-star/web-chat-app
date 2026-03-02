@@ -67,13 +67,21 @@
 
 <!-- Socket logic -->
 <script>
-  const socket = io();
+  // Pass username into the socket handshake so the backend accepts the connection
+  const socket = io({
+    query: { username: "{{ username }}" }
+  });
+
   const CHAT_ID = "{{ chat_id }}";
 
   socket.on("connect", () => {
-    socket.emit("join_chat", CHAT_ID);
+    // Only join a room if a chat is selected
+    if (CHAT_ID) {
+      socket.emit("join_chat", CHAT_ID);
+    }
   });
 
+  // Receive messages
   socket.on("chat_message", data => {
     const div = document.createElement("div");
     div.className = "bubble " + (data.user === "{{ username }}" ? "me" : "other");
@@ -82,20 +90,22 @@
       ${data.text}
       <span>${data.time}</span>
     `;
-    document.getElementById("chat").appendChild(div);
-    document.getElementById("chat").scrollTop =
-      document.getElementById("chat").scrollHeight;
+    const chatBox = document.getElementById("chat");
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
   });
 
+  // Typing indicator
   socket.on("typing", user => {
     const el = document.getElementById("typing");
     el.innerText = `${user} is typing...`;
     setTimeout(() => el.innerText = "", 1000);
   });
 
+  // Send a message
   function send() {
     const input = document.getElementById("msg");
-    if (!input.value.trim()) return;
+    if (!input.value.trim() || !CHAT_ID) return;
 
     socket.emit("chat_message", {
       chat_id: CHAT_ID,
@@ -105,10 +115,12 @@
     input.value = "";
   }
 
+  // Notify typing
   function typing() {
     socket.emit("typing");
   }
 </script>
+
 
 </body>
 </html>
