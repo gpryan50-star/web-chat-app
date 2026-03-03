@@ -132,7 +132,6 @@ def home():
     return render_template("home.html", chats=chat_data)
 
 
-
 @app.route("/profile/<username>")
 @login_required
 def profile(username):
@@ -281,8 +280,6 @@ def handle_message(data):
         "text": msg.text,
         "time": msg.timestamp
     }, room=str(chat_id))
-
-
 
 
 @socketio.on("typing")
