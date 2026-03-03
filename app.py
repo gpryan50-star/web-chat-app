@@ -132,6 +132,7 @@ def home():
     return render_template("home.html", chats=chat_data)
 
 
+
 @app.route("/profile/<username>")
 @login_required
 def profile(username):
