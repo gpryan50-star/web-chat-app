@@ -9,10 +9,16 @@
 
     <a href="/home" class="back-btn">← Messages</a>
 
+    {% if other %}
     <div class="chat-header">
         <img src="{{ other.avatar }}" class="header-avatar">
         <span class="header-name">{{ other.username }}</span>
     </div>
+    {% else %}
+    <div class="chat-header">
+        <span class="header-name">Select a conversation</span>
+    </div>
+    {% endif %}
 
     <div id="chat" class="chat-box">
         {% for m in messages %}
@@ -26,10 +32,12 @@
 
     <div id="typing" class="typing"></div>
 
+    {% if chat_id %}
     <div class="input-bar">
         <input id="msg" oninput="typing()" placeholder="Message...">
         <button onclick="send()">Send</button>
     </div>
+    {% endif %}
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
@@ -82,3 +90,4 @@
 
 </body>
 </html>
+
