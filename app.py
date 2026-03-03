@@ -100,8 +100,37 @@ def login():
 @app.route("/home")
 @login_required
 def home():
-    users = User.query.all()
-    return render_template("home.html", users=users)
+    chats = (
+        db.session.query(Chat)
+        .join(ChatUser)
+        .filter(ChatUser.user_id == current_user.id)
+        .all()
+    )
+
+    chat_data = []
+    for chat in chats:
+        last_msg = (
+            Message.query.filter_by(chat_id=chat.id)
+            .order_by(Message.id.desc())
+            .first()
+        )
+
+        other = (
+            db.session.query(User)
+            .join(ChatUser)
+            .filter(ChatUser.chat_id == chat.id, User.id != current_user.id)
+            .first()
+        )
+
+        chat_data.append({
+            "chat_id": chat.id,
+            "other": other,
+            "last_msg": last_msg.text if last_msg else "",
+            "last_time": last_msg.timestamp if last_msg else ""
+        })
+
+    return render_template("home.html", chats=chat_data)
+
 
 
 @app.route("/profile/<username>")

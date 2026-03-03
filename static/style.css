@@ -250,3 +250,147 @@ textarea, input {
 .logo {
   cursor: default;
 }
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f5f5f7;
+}
+
+/* DM Inbox */
+.dm-header {
+    font-size: 28px;
+    font-weight: 700;
+    padding: 20px;
+}
+
+.dm-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.dm-item {
+    display: flex;
+    align-items: center;
+    padding: 14px;
+    border-bottom: 1px solid #eee;
+    text-decoration: none;
+    color: black;
+}
+
+.dm-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    margin-right: 12px;
+}
+
+.dm-info {
+    flex: 1;
+}
+
+.dm-user {
+    font-weight: 600;
+    font-size: 17px;
+}
+
+.dm-last {
+    font-size: 14px;
+    color: #666;
+}
+
+.dm-time {
+    font-size: 12px;
+    color: #999;
+}
+
+/* Chat Page */
+.back-btn {
+    display: inline-block;
+    padding: 12px;
+    font-size: 18px;
+    color: #007aff;
+    text-decoration: none;
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    background: white;
+    border-bottom: 1px solid #ddd;
+}
+
+.header-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.header-name {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.chat-box {
+    height: calc(100vh - 200px);
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.bubble {
+    max-width: 70%;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    border-radius: 16px;
+    position: relative;
+}
+
+.bubble.me {
+    background: #007aff;
+    color: white;
+    margin-left: auto;
+}
+
+.bubble.other {
+    background: #e5e5ea;
+    color: black;
+    margin-right: auto;
+}
+
+.bubble span {
+    font-size: 11px;
+    opacity: 0.7;
+    display: block;
+    margin-top: 4px;
+}
+
+.input-bar {
+    display: flex;
+    padding: 10px;
+    background: white;
+    border-top: 1px solid #ddd;
+}
+
+.input-bar input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    margin-right: 10px;
+}
+
+.input-bar button {
+    padding: 10px 16px;
+    background: #007aff;
+    color: white;
+    border: none;
+    border-radius: 20px;
+}
+
+.typing {
+    padding-left: 15px;
+    font-size: 13px;
+    color: #777;
+}

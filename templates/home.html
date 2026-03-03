@@ -1,50 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Home</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <style>
-    .profile-card {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      padding: 10px;
-      margin-bottom: 10px;
-      background: #f5f5f5;
-      border-radius: 8px;
-    }
-    .avatar {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-  </style>
+    <title>Messages</title>
+    <link rel="stylesheet" href="/static/v2/style.css">
 </head>
+
 <body>
+    <div class="dm-header">Messages</div>
 
-<h2>All Users</h2>
+    <div class="dm-list">
+        {% for c in chats %}
+        <a class="dm-item" href="/chat/{{ c.chat_id }}">
+            <img src="{{ c.other.avatar }}" class="dm-avatar">
 
-{% for u in users %}
-  <div class="profile-card">
-    <img src="{{ u.avatar }}" class="avatar">
-    <div>
-      <a href="/profile/{{ u.username }}"><b>{{ u.username }}</b></a><br>
-      <small>{{ u.bio[:60] }}...</small>
+            <div class="dm-info">
+                <div class="dm-user">{{ c.other.username }}</div>
+                <div class="dm-last">{{ c.last_msg }}</div>
+            </div>
+
+            <div class="dm-time">{{ c.last_time }}</div>
+        </a>
+        {% endfor %}
     </div>
-  </div>
-{% endfor %}
 
-<br>
-<a href="/chat">Go to Chat</a>
-
-<script>
-function toggleDark() {
-    document.body.classList.toggle("dark");
-}
-</script>
-
-<button class="toggle-dark" onclick="toggleDark()">Dark Mode</button>
-
+    <a href="/logout" class="logout-btn">Logout</a>
 </body>
 </html>

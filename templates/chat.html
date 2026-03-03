@@ -1,126 +1,84 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Chat</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <!-- Socket.IO -->
-  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-
-  <!-- Styles -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Chat</title>
+    <link rel="stylesheet" href="/static/v2/style.css">
 </head>
 
 <body>
 
-<!-- Top bar -->
-<header class="topbar">
-  <div class="logo">💬 Chatly</div>
-</header>
+    <a href="/home" class="back-btn">← Messages</a>
 
-<div class="container">
-
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <h3>Chats</h3>
-
-    {% for c in chats %}
-      <a href="/chat/{{ c.id }}" class="chat-link {% if c.id == chat_id %}active{% endif %}">
-        Chat {{ c.id }}
-      </a>
-    {% endfor %}
-
-    <form action="/new_chat" method="POST" class="new-chat-form">
-      <input name="username" placeholder="Start chat with..." required />
-      <button type="submit">New</button>
-    </form>
-  </aside>
-
-  <!-- Chat area -->
-  <main class="chat-area">
+    <div class="chat-header">
+        <img src="{{ other.avatar }}" class="header-avatar">
+        <span class="header-name">{{ other.username }}</span>
+    </div>
 
     <div id="chat" class="chat-box">
-      {% for m in messages %}
-        <div class="bubble {% if m.user == username %}me{% else %}other{% endif %}">
-          <b>{{ m.user }}</b><br>
-          {{ m.text }}
-          <span>{{ m.timestamp }}</span>
+        {% for m in messages %}
+        <div class="bubble {{ 'me' if m.user == username else 'other' }}">
+            <b>{{ m.user }}</b><br>
+            {{ m.text }}
+            <span>{{ m.timestamp }}</span>
         </div>
-      {% endfor %}
+        {% endfor %}
     </div>
 
     <div id="typing" class="typing"></div>
 
     <div class="input-bar">
-      <input
-        id="msg"
-        placeholder="Type a message..."
-        oninput="typing()"
-        onkeydown="if (event.key === 'Enter') send()"
-      />
-      <button onclick="send()">Send</button>
+        <input id="msg" oninput="typing()" placeholder="Message...">
+        <button onclick="send()">Send</button>
     </div>
 
-  </main>
-</div>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
-<!-- Socket logic -->
-<script>
-  // Pass username into the socket handshake so the backend accepts the connection
-  const socket = io({
-    query: { username: "{{ username }}" }
-  });
+    <script>
+        const socket = io({
+            query: { username: "{{ username }}" }
+        });
 
-  const CHAT_ID = "{{ chat_id }}";
+        const CHAT_ID = "{{ chat_id }}";
 
-  socket.on("connect", () => {
-    // Only join a room if a chat is selected
-    if (CHAT_ID) {
-      socket.emit("join_chat", CHAT_ID);
-    }
-  });
+        socket.on("connect", () => {
+            if (CHAT_ID) socket.emit("join_chat", CHAT_ID);
+        });
 
-  // Receive messages
-  socket.on("chat_message", data => {
-    const div = document.createElement("div");
-    div.className = "bubble " + (data.user === "{{ username }}" ? "me" : "other");
-    div.innerHTML = `
-      <b>${data.user}</b><br>
-      ${data.text}
-      <span>${data.time}</span>
-    `;
-    const chatBox = document.getElementById("chat");
-    chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  });
+        socket.on("chat_message", data => {
+            const div = document.createElement("div");
+            div.className = "bubble " + (data.user === "{{ username }}" ? "me" : "other");
+            div.innerHTML = `
+                <b>${data.user}</b><br>
+                ${data.text}
+                <span>${data.time}</span>
+            `;
+            const chatBox = document.getElementById("chat");
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
 
-  // Typing indicator
-  socket.on("typing", user => {
-    const el = document.getElementById("typing");
-    el.innerText = `${user} is typing...`;
-    setTimeout(() => el.innerText = "", 1000);
-  });
+        socket.on("typing", user => {
+            const el = document.getElementById("typing");
+            el.innerText = `${user} is typing...`;
+            setTimeout(() => el.innerText = "", 1000);
+        });
 
-  // Send a message
-  function send() {
-    const input = document.getElementById("msg");
-    if (!input.value.trim() || !CHAT_ID) return;
+        function send() {
+            const input = document.getElementById("msg");
+            if (!input.value.trim() || !CHAT_ID) return;
 
-    socket.emit("chat_message", {
-      chat_id: CHAT_ID,
-      text: input.value
-    });
+            socket.emit("chat_message", {
+                chat_id: CHAT_ID,
+                text: input.value
+            });
 
-    input.value = "";
-  }
+            input.value = "";
+        }
 
-  // Notify typing
-  function typing() {
-    socket.emit("typing");
-  }
-</script>
-
+        function typing() {
+            socket.emit("typing");
+        }
+    </script>
 
 </body>
 </html>
