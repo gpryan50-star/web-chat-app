@@ -394,3 +394,38 @@ body {
     font-size: 13px;
     color: #777;
 }
+.dm-header {
+    font-size: 28px;
+    font-weight: 700;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logout-btn {
+    font-size: 16px;
+    color: #007aff;
+    text-decoration: none;
+}
+
+.new-chat-container {
+    padding: 0 20px 10px 20px;
+}
+
+.new-chat-btn {
+    display: inline-block;
+    padding: 10px 14px;
+    background: #007aff;
+    color: white;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.empty-inbox {
+    text-align: center;
+    color: #777;
+    padding: 40px 0;
+    font-size: 16px;
+}
