@@ -156,18 +156,28 @@ def edit_profile():
 @login_required
 def chat(chat_id):
     messages = Message.query.filter_by(chat_id=chat_id).all()
+
+    other = (
+        db.session.query(User)
+        .join(ChatUser)
+        .filter(ChatUser.chat_id == chat_id, User.id != current_user.id)
+        .first()
+    )
+
     chats = (
         db.session.query(Chat)
         .join(ChatUser)
         .filter(ChatUser.user_id == current_user.id)
         .all()
     )
+
     return render_template(
         "chat.html",
         username=current_user.username,
         messages=messages,
         chat_id=chat_id,
-        chats=chats
+        chats=chats,
+        other=other
     )
 
 
