@@ -6,23 +6,39 @@
 </head>
 
 <body>
-    <div class="dm-header">Messages</div>
 
-    <div class="dm-list">
-        {% for c in chats %}
-        <a class="dm-item" href="/chat/{{ c.chat_id }}">
-            <img src="{{ c.other.avatar }}" class="dm-avatar">
-
-            <div class="dm-info">
-                <div class="dm-user">{{ c.other.username }}</div>
-                <div class="dm-last">{{ c.last_msg }}</div>
-            </div>
-
-            <div class="dm-time">{{ c.last_time }}</div>
-        </a>
-        {% endfor %}
+    <div class="dm-header">
+        Messages
+        <a href="/logout" class="logout-btn">Logout</a>
     </div>
 
-    <a href="/logout" class="logout-btn">Logout</a>
+    <!-- New Chat Button -->
+    <div class="new-chat-container">
+        <a href="/chat" class="new-chat-btn">Start New Chat</a>
+    </div>
+
+    <div class="dm-list">
+        {% if chats %}
+            {% for c in chats %}
+            <a class="dm-item" href="/chat/{{ c.chat_id }}">
+                <img src="{{ c.other.avatar }}" class="dm-avatar">
+
+                <div class="dm-info">
+                    <div class="dm-user">{{ c.other.username }}</div>
+                    <div class="dm-last">{{ c.last_msg }}</div>
+                </div>
+
+                <div class="dm-time">{{ c.last_time }}</div>
+            </a>
+            {% endfor %}
+        {% else %}
+            <div class="empty-inbox">
+                No conversations yet.
+                <br>
+                Tap “Start New Chat” to begin messaging.
+            </div>
+        {% endif %}
+    </div>
+
 </body>
 </html>
