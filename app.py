@@ -188,7 +188,7 @@ def new_chat():
     other = User.query.filter_by(username=username).first()
 
     if not other or other.id == current_user.id:
-        return redirect("/chat")
+        return redirect("/chat/1")
 
     # Check if chat already exists
     existing = (
