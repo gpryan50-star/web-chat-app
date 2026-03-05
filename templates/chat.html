@@ -3,90 +3,273 @@
 <head>
     <title>Chat</title>
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            background: #f5f5f5;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+        }
+
+        /* LEFT SIDEBAR */
+        .sidebar {
+            width: 28%;
+            background: #ffffff;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .chat-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            text-decoration: none;
+            color: black;
+        }
+
+        .chat-item:hover {
+            background: #f0f0f0;
+        }
+
+        .chat-item.active {
+            background: #e6f0ff;
+        }
+
+        .chat-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+
+        .chat-info {
+            flex-grow: 1;
+        }
+
+        .chat-info b {
+            font-size: 16px;
+        }
+
+        .chat-info p {
+            margin: 2px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .chat-time {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* RIGHT CHAT AREA */
+        .chat-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chat-header {
+            padding: 15px;
+            background: white;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+        }
+
+        .header-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .header-name {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .chat-box {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .bubble {
+            max-width: 60%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .me {
+            background: #d1e7ff;
+            margin-left: auto;
+        }
+
+        .other {
+            background: #ffffff;
+            border: 1px solid #ddd;
+        }
+
+        .bubble span {
+            font-size: 11px;
+            color: #555;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .input-bar {
+            display: flex;
+            padding: 10px;
+            background: white;
+            border-top: 1px solid #ddd;
+        }
+
+        .input-bar input {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+        }
+
+        .input-bar button {
+            padding: 10px 18px;
+            border: none;
+            background: #007bff;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .typing {
+            padding-left: 15px;
+            color: #777;
+            font-size: 14px;
+        }
+    </style>
 </head>
 
 <body>
 
-    <a href="/home" class="back-btn">← Messages</a>
+<div class="container">
 
-    {% if other %}
-    <div class="chat-header">
-        <img src="{{ other.avatar }}" class="header-avatar">
-        <span class="header-name">{{ other.username }}</span>
-    </div>
-    {% else %}
-    <div class="chat-header">
-        <span class="header-name">Select a conversation</span>
-    </div>
-    {% endif %}
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-header">Messages</div>
 
-    <div id="chat" class="chat-box">
-        {% for m in messages %}
-        <div class="bubble {{ 'me' if m.user == username else 'other' }}">
-            <b>{{ m.user }}</b><br>
-            {{ m.text }}
-            <span>{{ m.timestamp }}</span>
-        </div>
+        {% for c in chats %}
+        <a href="/chat/{{ c.id }}" class="chat-item {% if c.id == chat_id %}active{% endif %}">
+            <img src="{{ c.other.avatar if c.other else '/static/default.png' }}" class="chat-avatar">
+
+            <div class="chat-info">
+                <b>{{ c.other.username if c.other else "Unknown" }}</b>
+                <p>{{ c.last_msg }}</p>
+            </div>
+
+            <span class="chat-time">{{ c.last_time }}</span>
+        </a>
         {% endfor %}
     </div>
 
-    <div id="typing" class="typing"></div>
+    <!-- RIGHT CHAT AREA -->
+    <div class="chat-area">
 
-    {% if chat_id %}
-    <div class="input-bar">
-        <input id="msg" oninput="typing()" placeholder="Message...">
-        <button onclick="send()">Send</button>
+        <div class="chat-header">
+            {% if other %}
+                <img src="{{ other.avatar }}" class="header-avatar">
+                <span class="header-name">{{ other.username }}</span>
+            {% else %}
+                <span class="header-name">Select a conversation</span>
+            {% endif %}
+        </div>
+
+        <div id="chat" class="chat-box">
+            {% for m in messages %}
+            <div class="bubble {{ 'me' if m.user == username else 'other' }}">
+                <b>{{ m.user }}</b><br>
+                {{ m.text }}
+                <span>{{ m.timestamp }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div id="typing" class="typing"></div>
+
+        {% if chat_id %}
+        <div class="input-bar">
+            <input id="msg" oninput="typing()" placeholder="Message...">
+            <button onclick="send()">Send</button>
+        </div>
+        {% endif %}
+
     </div>
-    {% endif %}
+</div>
 
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
-    <script>
-        const socket = io({
-            query: { username: "{{ username }}" }
+<script>
+    const socket = io({
+        query: { username: "{{ username }}" }
+    });
+
+    const CHAT_ID = "{{ chat_id }}";
+
+    socket.on("connect", () => {
+        if (CHAT_ID) socket.emit("join_chat", CHAT_ID);
+    });
+
+    socket.on("chat_message", data => {
+        const div = document.createElement("div");
+        div.className = "bubble " + (data.user === "{{ username }}" ? "me" : "other");
+        div.innerHTML = `
+            <b>${data.user}</b><br>
+            ${data.text}
+            <span>${data.time}</span>
+        `;
+        const chatBox = document.getElementById("chat");
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+
+    socket.on("typing", user => {
+        const el = document.getElementById("typing");
+        el.innerText = `${user} is typing...`;
+        setTimeout(() => el.innerText = "", 1000);
+    });
+
+    function send() {
+        const input = document.getElementById("msg");
+        if (!input.value.trim() || !CHAT_ID) return;
+
+        socket.emit("chat_message", {
+            chat_id: CHAT_ID,
+            text: input.value
         });
 
-        const CHAT_ID = "{{ chat_id }}";
+        input.value = "";
+    }
 
-        socket.on("connect", () => {
-            if (CHAT_ID) socket.emit("join_chat", CHAT_ID);
-        });
-
-        socket.on("chat_message", data => {
-            const div = document.createElement("div");
-            div.className = "bubble " + (data.user === "{{ username }}" ? "me" : "other");
-            div.innerHTML = `
-                <b>${data.user}</b><br>
-                ${data.text}
-                <span>${data.time}</span>
-            `;
-            const chatBox = document.getElementById("chat");
-            chatBox.appendChild(div);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        });
-
-        socket.on("typing", user => {
-            const el = document.getElementById("typing");
-            el.innerText = `${user} is typing...`;
-            setTimeout(() => el.innerText = "", 1000);
-        });
-
-        function send() {
-            const input = document.getElementById("msg");
-            if (!input.value.trim() || !CHAT_ID) return;
-
-            socket.emit("chat_message", {
-                chat_id: CHAT_ID,
-                text: input.value
-            });
-
-            input.value = "";
-        }
-
-        function typing() {
-            socket.emit("typing");
-        }
-    </script>
+    function typing() {
+        socket.emit("typing");
+    }
+</script>
 
 </body>
 </html>
