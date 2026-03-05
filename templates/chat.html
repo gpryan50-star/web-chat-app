@@ -36,7 +36,9 @@
 
     <!-- Chat Window -->
     <div class="chat-window">
+
         {% if chat_id %}
+            <!-- Messages -->
             <div class="messages">
                 {% for msg in messages %}
                     <div class="message {{ 'me' if msg.sender_id == current_user.id else 'them' }}">
@@ -45,6 +47,7 @@
                 {% endfor %}
             </div>
 
+            <!-- Input Bar -->
             <form id="message-form">
                 <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
                 <button type="submit">Send</button>
@@ -53,7 +56,6 @@
             <script>
                 const socket = io();
                 const chatId = "{{ chat_id }}";
-                const username = "{{ username }}";
 
                 document.getElementById("message-form").addEventListener("submit", function(e) {
                     e.preventDefault();
@@ -82,13 +84,15 @@
             </script>
 
         {% else %}
+            <!-- Empty State -->
             <div class="empty-chat">
                 <h2>Select a conversation</h2>
             </div>
         {% endif %}
-    </div>
 
-</div>
+    </div> <!-- END chat-window -->
+
+</div> <!-- END container -->
 </body>
 </html>
 
