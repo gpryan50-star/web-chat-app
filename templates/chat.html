@@ -16,22 +16,39 @@
 
     <!-- Sidebar -->
     <div class="sidebar">
+
         <h2>Messages</h2>
 
+        <!-- Start New Chat -->
+        <form action="/new_chat" method="POST" class="new-chat">
+            <input name="username" placeholder="Start chat with username" required>
+            <button type="submit">Start</button>
+        </form>
+
+        <hr>
+
         {% if chats %}
+
             {% for chat in chats %}
+
                 <a class="chat-item" href="/chat/{{ chat.id }}">
                     <div class="chat-info">
                         <p>Chat {{ chat.id }}</p>
                     </div>
                 </a>
+
             {% endfor %}
+
         {% else %}
+
             <p>No conversations yet.</p>
+
         {% endif %}
 
         <a href="/home" class="back-home">← Back Home</a>
+
     </div>
+
 
 
     <!-- Chat Window -->
@@ -43,19 +60,31 @@
         <div class="messages" id="messages">
 
             {% for msg in messages %}
+
                 <div class="message {{ 'me' if msg.user == current_user.username else 'them' }}">
                     <p>{{ msg.text }}</p>
                 </div>
+
             {% endfor %}
 
         </div>
 
 
-        <!-- Input -->
+
+        <!-- Message Input -->
         <form id="message-form">
-            <input id="message-input" type="text" placeholder="Type a message..." autocomplete="off">
+
+            <input
+                id="message-input"
+                type="text"
+                placeholder="Type a message..."
+                autocomplete="off"
+            >
+
             <button type="submit">Send</button>
+
         </form>
+
 
 
 <script>
@@ -71,23 +100,29 @@ const chatId = "{{ chat_id }}";
 socket.emit("join_chat", chatId);
 
 
+
 document.getElementById("message-form").addEventListener("submit", function(e){
 
     e.preventDefault();
 
     const input = document.getElementById("message-input");
-    const content = input.value.trim();
 
-    if(content === "") return;
+    const text = input.value.trim();
+
+    if(text === "") return;
+
 
     socket.emit("chat_message", {
+
         chat_id: chatId,
-        text: content
+        text: text
+
     });
 
     input.value = "";
 
 });
+
 
 
 socket.on("chat_message", function(data){
@@ -96,11 +131,17 @@ socket.on("chat_message", function(data){
 
     const div = document.createElement("div");
 
+
     if(data.user === "{{ current_user.username }}"){
+
         div.className = "message me";
+
     } else {
+
         div.className = "message them";
+
     }
+
 
     div.innerHTML = "<p>" + data.text + "</p>";
 
@@ -113,10 +154,14 @@ socket.on("chat_message", function(data){
 </script>
 
 
+
         {% else %}
 
+        <!-- Empty State -->
         <div class="empty-chat">
+
             <h2>Select a conversation</h2>
+
         </div>
 
         {% endif %}
