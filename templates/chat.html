@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
 </head>
 
 <body>
+
 <div class="container">
 
     <!-- Sidebar -->
@@ -16,14 +20,9 @@
 
         {% if chats %}
             {% for chat in chats %}
-                {% set other = chat.other_user(current_user.id) %}
                 <a class="chat-item" href="/chat/{{ chat.id }}">
-                    <img src="{{ other.avatar_url if other.avatar_url else url_for('static', filename='default-avatar.png') }}" class="avatar">
                     <div class="chat-info">
-                        <p class="username">{{ other.username }}</p>
-                        <p class="last-message">
-                            {{ chat.last_message().content if chat.last_message() else "No messages yet" }}
-                        </p>
+                        <p>Chat {{ chat.id }}</p>
                     </div>
                 </a>
             {% endfor %}
@@ -34,65 +33,97 @@
         <a href="/home" class="back-home">← Back Home</a>
     </div>
 
+
     <!-- Chat Window -->
     <div class="chat-window">
 
         {% if chat_id %}
-            <!-- Messages -->
-            <div class="messages">
-                {% for msg in messages %}
-                    <div class="message {{ 'me' if msg.sender_id == current_user.id else 'them' }}">
-                        <p>{{ msg.content }}</p>
-                    </div>
-                {% endfor %}
-            </div>
 
-            <!-- Input Bar -->
-            <form id="message-form">
-                <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
-                <button type="submit">Send</button>
-            </form>
+        <!-- Messages -->
+        <div class="messages" id="messages">
 
-            <script>
-                const socket = io();
-                const chatId = "{{ chat_id }}";
+            {% for msg in messages %}
+                <div class="message {{ 'me' if msg.user == current_user.username else 'them' }}">
+                    <p>{{ msg.text }}</p>
+                </div>
+            {% endfor %}
 
-                document.getElementById("message-form").addEventListener("submit", function(e) {
-                    e.preventDefault();
-                    const input = document.getElementById("message-input");
-                    const content = input.value.trim();
-                    if (content === "") return;
+        </div>
 
-                    socket.emit("send_message", {
-                        chat_id: chatId,
-                        content: content
-                    });
 
-                    input.value = "";
-                });
+        <!-- Input -->
+        <form id="message-form">
+            <input id="message-input" type="text" placeholder="Type a message..." autocomplete="off">
+            <button type="submit">Send</button>
+        </form>
 
-                socket.on("receive_message", function(data) {
-                    if (data.chat_id == chatId) {
-                        const messagesDiv = document.querySelector(".messages");
-                        const div = document.createElement("div");
-                        div.className = "message " + (data.sender_id == {{ current_user.id }} ? "me" : "them");
-                        div.innerHTML = `<p>${data.content}</p>`;
-                        messagesDiv.appendChild(div);
-                        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                    }
-                });
-            </script>
+
+<script>
+
+const socket = io({
+    query: {
+        username: "{{ current_user.username }}"
+    }
+});
+
+const chatId = "{{ chat_id }}";
+
+socket.emit("join_chat", chatId);
+
+
+document.getElementById("message-form").addEventListener("submit", function(e){
+
+    e.preventDefault();
+
+    const input = document.getElementById("message-input");
+    const content = input.value.trim();
+
+    if(content === "") return;
+
+    socket.emit("chat_message", {
+        chat_id: chatId,
+        text: content
+    });
+
+    input.value = "";
+
+});
+
+
+socket.on("chat_message", function(data){
+
+    const messagesDiv = document.getElementById("messages");
+
+    const div = document.createElement("div");
+
+    if(data.user === "{{ current_user.username }}"){
+        div.className = "message me";
+    } else {
+        div.className = "message them";
+    }
+
+    div.innerHTML = "<p>" + data.text + "</p>";
+
+    messagesDiv.appendChild(div);
+
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+});
+
+</script>
+
 
         {% else %}
-            <!-- Empty State -->
-            <div class="empty-chat">
-                <h2>Select a conversation</h2>
-            </div>
+
+        <div class="empty-chat">
+            <h2>Select a conversation</h2>
+        </div>
+
         {% endif %}
 
-    </div> <!-- END chat-window -->
+    </div>
 
-</div> <!-- END container -->
+</div>
+
 </body>
 </html>
-
