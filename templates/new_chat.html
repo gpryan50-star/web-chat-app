@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Start New Chat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="navbar">
+    <div>Start New Chat</div>
+    <a href="/home" class="logout-btn">Back</a>
+</div>
+
+<div class="dm-list">
+
+    {% if users %}
+        {% for user in users %}
+        <form action="/new_chat" method="POST" style="margin:0;">
+            <input type="hidden" name="username" value="{{ user.username }}">
+
+            <button class="dm-item" style="width:100%; text-align:left; border:none; background:none; cursor:pointer;">
+                <img src="{{ user.avatar }}" class="dm-avatar">
+
+                <div class="dm-info">
+                    <div class="dm-user">{{ user.username }}</div>
+                    <div class="dm-last">{{ user.bio }}</div>
+                </div>
+            </button>
+        </form>
+        {% endfor %}
+    {% else %}
+        <p class="empty-inbox">No other users available.</p>
+    {% endif %}
+
+</div>
+
+</body>
+</html>
