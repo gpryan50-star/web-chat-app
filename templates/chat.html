@@ -25,17 +25,19 @@
         {% if chats %}
             {% for chat in chats %}
                 {% set other = chat.other_user(current_user.id) %}
+                {% set last = chat.last_message() %}
+
                 <a class="chat-item {% if chat.id == chat_id %}active{% endif %}" href="/chat/{{ chat.id }}">
-                    <img src="{{ other.avatar_url if other.avatar_url else url_for('static', filename='default.png') }}" class="chat-avatar">
+                    <img src="{{ other.avatar if other.avatar else url_for('static', filename='default.png') }}" class="chat-avatar">
 
                     <div class="chat-info">
                         <b>{{ other.username }}</b>
-                        <p>{{ chat.last_message().text if chat.last_message() else "No messages yet" }}</p>
+                        <p>{{ last.text if last else "No messages yet" }}</p>
                     </div>
 
                     <div class="chat-time">
-                        {% if chat.last_message() %}
-                            {{ chat.last_message().timestamp.strftime("%I:%M %p") }}
+                        {% if last %}
+                            {{ last.timestamp }}
                         {% endif %}
                     </div>
                 </a>
@@ -54,7 +56,7 @@
 
         <!-- Chat Header -->
         <div class="chat-header">
-            <img src="{{ other.avatar_url if other.avatar_url else url_for('static', filename='default.png') }}" class="header-avatar">
+            <img src="{{ other.avatar if other.avatar else url_for('static', filename='default.png') }}" class="header-avatar">
             <div class="header-name">{{ other.username }}</div>
         </div>
 
@@ -65,12 +67,12 @@
             <div class="message-row {% if msg.user == current_user.username %}me{% else %}other{% endif %}">
 
                 {% if msg.user != current_user.username %}
-                    <img src="{{ other.avatar_url if other.avatar_url else url_for('static', filename='default.png') }}" class="msg-avatar">
+                    <img src="{{ other.avatar if other.avatar else url_for('static', filename='default.png') }}" class="msg-avatar">
                 {% endif %}
 
                 <div>
                     <div class="bubble">{{ msg.text }}</div>
-                    <div class="timestamp">{{ msg.timestamp.strftime("%I:%M %p") }}</div>
+                    <div class="timestamp">{{ msg.timestamp }}</div>
                 </div>
 
             </div>
@@ -120,7 +122,7 @@ socket.on("chat_message", function(data){
     if(data.user !== "{{ current_user.username }}"){
         const avatar = document.createElement("img");
         avatar.className = "msg-avatar";
-        avatar.src = "{{ other.avatar_url if other.avatar_url else url_for('static', filename='default.png') }}";
+        avatar.src = "{{ other.avatar if other.avatar else url_for('static', filename='default.png') }}";
         row.appendChild(avatar);
     }
 
@@ -130,7 +132,12 @@ socket.on("chat_message", function(data){
     bubble.className = "bubble";
     bubble.innerText = data.text;
 
+    const timestamp = document.createElement("div");
+    timestamp.className = "timestamp";
+    timestamp.innerText = data.time;
+
     wrapper.appendChild(bubble);
+    wrapper.appendChild(timestamp);
 
     row.appendChild(wrapper);
     messagesDiv.appendChild(row);
@@ -153,3 +160,4 @@ socket.on("chat_message", function(data){
 
 </body>
 </html>
+
