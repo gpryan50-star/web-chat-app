@@ -1,45 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Chat</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<title>Chat</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
 </head>
 
 <body>
 
 <div class="container">
-
-    <!-- LEFT SIDEBAR -->
-    <div class="sidebar">
-
-        <div class="sidebar-header">Messages</div>
-
-        {% if chats %}
-            {% for chat in chats %}
-                {% set other = chat.other_user(current_user.id) %}
-                <a class="chat-item {% if chat.id == chat_id %}active{% endif %}" href="/chat/{{ chat.id }}">
-                    <img src="{{ other.avatar_url if other.avatar_url else url_for('static', filename='default.png') }}" class="chat-avatar">
-
-                    <div class="chat-info">
-                        <b>{{ other.username }}</b>
-                        <p>{{ chat.last_message().text if chat.last_message() else "No messages yet" }}</p>
-                    </div>
-
-                    <div class="chat-time">
-                        {% if chat.last_message() %}
-                            {{ chat.last_message().timestamp.strftime("%I:%M %p") }}
-                        {% endif %}
-                    </div>
-                </a>
-            {% endfor %}
-        {% else %}
-            <p class="empty-inbox">No conversations yet.</p>
-        {% endif %}
-
-    </div>
 
 
     <!-- RIGHT CHAT AREA -->
@@ -49,54 +21,69 @@
 
         <!-- Chat Header -->
         <div class="chat-header">
-            <img src="{{ other.avatar_url if other.avatar_url else url_for('static', filename='default.png') }}" class="header-avatar">
-            <div class="header-name">{{ other.username }}</div>
+
+            <img src="/static/default.png" class="header-avatar">
+
+            <div class="header-name">
+                Chat {{ chat_id }}
+            </div>
+
         </div>
+
 
         <!-- Messages -->
         <div class="chat-box" id="messages">
 
             {% for msg in messages %}
-            <div class="message-row {% if msg.user == current_user.username %}me{% else %}other{% endif %}">
 
-                {% if msg.user != current_user.username %}
-                    <img src="{{ other.avatar_url if other.avatar_url else url_for('static', filename='default.png') }}" class="msg-avatar">
-                {% endif %}
-
-                <div>
-                    <div class="bubble">{{ msg.text }}</div>
-                    <div class="timestamp">{{ msg.timestamp.strftime("%I:%M %p") }}</div>
-                </div>
-
+            <div class="bubble {% if msg.user == current_user.username %}me{% else %}other{% endif %}">
+                {{ msg.text }}
             </div>
+
             {% endfor %}
 
         </div>
 
-        <!-- Typing Indicator -->
-        <div class="typing" id="typing"></div>
 
         <!-- Input Bar -->
         <form class="input-bar" id="message-form">
-            <input id="message-input" type="text" placeholder="Type a message..." autocomplete="off">
+
+            <input
+                id="message-input"
+                type="text"
+                placeholder="Type a message..."
+                autocomplete="off"
+            >
+
             <button type="submit">Send</button>
+
         </form>
 
 
 <script>
+
 const socket = io({
-    query: { username: "{{ current_user.username }}" }
+    query: {
+        username: "{{ current_user.username }}"
+    }
 });
 
 const chatId = "{{ chat_id }}";
+
 socket.emit("join_chat", chatId);
 
+
+
 document.getElementById("message-form").addEventListener("submit", function(e){
+
     e.preventDefault();
 
     const input = document.getElementById("message-input");
+
     const text = input.value.trim();
+
     if(text === "") return;
+
 
     socket.emit("chat_message", {
         chat_id: chatId,
@@ -104,35 +91,32 @@ document.getElementById("message-form").addEventListener("submit", function(e){
     });
 
     input.value = "";
+
 });
+
 
 socket.on("chat_message", function(data){
+
     const messagesDiv = document.getElementById("messages");
 
-    const row = document.createElement("div");
-    row.className = "message-row " + (data.user === "{{ current_user.username }}" ? "me" : "other");
+    const div = document.createElement("div");
 
-    if(data.user !== "{{ current_user.username }}"){
-        const avatar = document.createElement("img");
-        avatar.className = "msg-avatar";
-        avatar.src = "{{ other.avatar_url if other.avatar_url else url_for('static', filename='default.png') }}";
-        row.appendChild(avatar);
+    if(data.user === "{{ current_user.username }}"){
+        div.className = "bubble me";
+    } else {
+        div.className = "bubble other";
     }
 
-    const wrapper = document.createElement("div");
+    div.innerText = data.text;
 
-    const bubble = document.createElement("div");
-    bubble.className = "bubble";
-    bubble.innerText = data.text;
-
-    wrapper.appendChild(bubble);
-
-    row.appendChild(wrapper);
-    messagesDiv.appendChild(row);
+    messagesDiv.appendChild(div);
 
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
 });
+
 </script>
+
 
         {% else %}
 
