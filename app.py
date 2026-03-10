@@ -40,7 +40,6 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True)
     password_hash = db.Column(db.String(128))
 
-    # Profile fields
     bio = db.Column(db.Text, default="Hey, I'm new here!")
     avatar = db.Column(db.String(255), default="/static/default.png")
     joined = db.Column(db.String(20), default=datetime.now().strftime("%Y-%m-%d"))
@@ -57,6 +56,7 @@ class Message(db.Model):
 class Chat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
+    # NEW: get the other user in the chat
     def other_user(self, current_user_id):
         return (
             db.session.query(User)
@@ -65,12 +65,22 @@ class Chat(db.Model):
             .first()
         )
 
+    # NEW: get all participants
     def participants(self):
         return (
             db.session.query(User)
             .join(ChatUser)
             .filter(ChatUser.chat_id == self.id)
             .all()
+        )
+
+    # NEW: get the most recent message
+    def last_message(self):
+        return (
+            Message.query
+            .filter_by(chat_id=self.id)
+            .order_by(Message.id.desc())
+            .first()
         )
 
 
@@ -124,12 +134,7 @@ def home():
 
     chat_data = []
     for chat in chats:
-        last_msg = (
-            Message.query.filter_by(chat_id=chat.id)
-            .order_by(Message.id.desc())
-            .first()
-        )
-
+        last_msg = chat.last_message()
         other = chat.other_user(current_user.id)
 
         chat_data.append({
@@ -200,7 +205,6 @@ def new_chat():
         if not other or other.id == current_user.id:
             return redirect("/chat")
 
-        # Check if chat already exists
         existing = (
             db.session.query(Chat)
             .join(ChatUser)
@@ -225,7 +229,6 @@ def new_chat():
 
         return redirect(f"/chat/{chat.id}")
 
-    # GET → show user list
     users = User.query.filter(User.id != current_user.id).all()
     return render_template("new_chat.html", users=users)
 
@@ -289,7 +292,7 @@ def handle_message(data):
     username = users_online.get(request.sid)
 
     if not username:
-        return  # socket not authenticated
+        return
 
     msg = Message(
         chat_id=chat_id,
