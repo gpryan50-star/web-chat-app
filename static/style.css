@@ -61,6 +61,11 @@ a:hover {
     text-decoration: none;
 }
 
+.logo-img {
+    float: right;
+    margin: 5px
+}
+
 /* ============================================================
    HOME PAGE — PROFILE CARD
    ============================================================ */
@@ -269,9 +274,6 @@ a:hover {
     font-weight: 600;
 }
 
-/* ============================================================
-   CHAT MESSAGES
-   ============================================================ */
 
 /* ============================================================
    CHAT MESSAGES
@@ -285,38 +287,67 @@ a:hover {
     flex-direction: column;
 }
 
-/* Base bubble */
+/* message row */
+.message-row {
+    display: flex;
+    align-items: flex-end;
+    margin-bottom: 10px;
+}
+
+/* avatar */
+.msg-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+/* bubble */
 .bubble {
     max-width: 65%;
     padding: 10px 14px;
-    margin-bottom: 10px;
-    border-radius: 16px;
+    border-radius: 18px;
     font-size: 15px;
-    word-wrap: break-word;
-}
-
-/* SENT MESSAGE (you) */
-.bubble.me {
-    background: linear-gradient(135deg,#007aff,#3a8dff);
-    color: white;
-    margin-left: auto;
-    border-bottom-right-radius: 4px;
+    line-height: 1.4;
+    position: relative;
+    animation: messagePop .15s ease;
 }
 
 /* RECEIVED MESSAGE */
-.bubble.other {
-    background: #f1f1f1;
-    color: black;
-    margin-right: auto;
-    border-bottom-left-radius: 4px;
+.message-row.other .bubble {
+    background: #e4e6eb;
+    color: #000;
+    border-bottom-left-radius: 6px;
+}
+
+/* SENT MESSAGE */
+.message-row.me {
+    justify-content: flex-end;
+}
+
+.message-row.me .bubble {
+    background: #007aff;
+    color: white;
+    border-bottom-right-radius: 6px;
 }
 
 /* timestamp */
-.bubble span {
+.timestamp {
     font-size: 11px;
-    opacity: 0.7;
-    display: block;
+    color: #888;
     margin-top: 4px;
+}
+
+/* animation */
+@keyframes messagePop {
+    from {
+        transform: scale(.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 /* ============================================================
