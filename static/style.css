@@ -63,7 +63,7 @@ a:hover {
 
 .logo-img {
     float: right;
-    margin: 5px
+    margin: 5px;
 }
 
 /* ============================================================
@@ -274,9 +274,8 @@ a:hover {
     font-weight: 600;
 }
 
-
 /* ============================================================
-   CHAT MESSAGES
+   CHAT BUBBLES — iMessage / Snapchat Style
    ============================================================ */
 
 .chat-box {
@@ -287,14 +286,44 @@ a:hover {
     flex-direction: column;
 }
 
-/* message row */
+/* Message row */
 .message-row {
     display: flex;
     align-items: flex-end;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
-/* avatar */
+/* RECEIVED (left) */
+.message-row.other {
+    justify-content: flex-start;
+}
+
+.message-row.other .bubble {
+    background: var(--bubble-other);
+    color: #000;
+    padding: 10px 14px;
+    max-width: 70%;
+    border-radius: 18px 18px 18px 6px;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+/* SENT (right) */
+.message-row.me {
+    justify-content: flex-end;
+}
+
+.message-row.me .bubble {
+    background: var(--bubble-me);
+    color: white;
+    padding: 10px 14px;
+    max-width: 70%;
+    border-radius: 18px 18px 6px 18px;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+/* Avatar for received messages */
 .msg-avatar {
     width: 34px;
     height: 34px;
@@ -302,35 +331,12 @@ a:hover {
     margin-right: 8px;
 }
 
-
-/* SENT MESSAGE */
-.message-row.me {
-    justify-content: flex-end;
-}
-
-.message-row.me .bubble {
-    background: #007aff;
-    color: white;
-    border-bottom-right-radius: 6px;
-}
-
-/* timestamp */
+/* Timestamp */
 .timestamp {
     font-size: 11px;
     color: #888;
     margin-top: 4px;
-}
-
-/* animation */
-@keyframes messagePop {
-    from {
-        transform: scale(.9);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
+    margin-left: 4px;
 }
 
 /* ============================================================
@@ -409,61 +415,3 @@ input {
     color: var(--text);
     margin-bottom: 15px;
 }
-
-/* ============================================================
-   CHAT BUBBLES — iMessage / Snapchat Style
-   ============================================================ */
-
-/* Message row container */
-.message-row {
-    display: flex;
-    align-items: flex-end;
-    margin-bottom: 12px;
-}
-
-/* Received messages (left side) */
-.message-row.other {
-    justify-content: flex-start;
-}
-
-.message-row.other .bubble {
-    background: #e5e5ea;        /* iMessage light gray */
-    color: #000;
-    border-radius: 18px 18px 18px 6px;
-    padding: 10px 14px;
-    max-width: 70%;
-    font-size: 15px;
-    line-height: 1.4;
-}
-
-/* Sent messages (right side) */
-.message-row.me {
-    justify-content: flex-end;
-}
-
-.message-row.me .bubble {
-    background: #007aff;        /* iMessage blue */
-    color: white;
-    border-radius: 18px 18px 6px 18px;
-    padding: 10px 14px;
-    max-width: 70%;
-    font-size: 15px;
-    line-height: 1.4;
-}
-
-/* Avatar for received messages */
-.msg-avatar {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    margin-right: 8px;
-}
-
-/* Timestamp under each bubble */
-.timestamp {
-    font-size: 11px;
-    color: #888;
-    margin-top: 4px;
-    margin-left: 4px;
-}
-
