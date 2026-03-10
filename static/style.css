@@ -302,23 +302,6 @@ a:hover {
     margin-right: 8px;
 }
 
-/* bubble */
-.bubble {
-    max-width: 65%;
-    padding: 10px 14px;
-    border-radius: 18px;
-    font-size: 15px;
-    line-height: 1.4;
-    position: relative;
-    animation: messagePop .15s ease;
-}
-
-/* RECEIVED MESSAGE */
-.message-row.other .bubble {
-    background: #e4e6eb;
-    color: #000;
-    border-bottom-left-radius: 6px;
-}
 
 /* SENT MESSAGE */
 .message-row.me {
