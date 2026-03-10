@@ -17,11 +17,6 @@
 
         <div class="sidebar-header">Messages</div>
 
-        <!-- NEW CHAT BUTTON -->
-        <div class="new-chat-container">
-            <a href="/new_chat" class="new-chat-btn">Start New Chat</a>
-        </div>
-
         {% if chats %}
             {% for chat in chats %}
                 {% set other = chat.other_user(current_user.id) %}
