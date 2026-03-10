@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, join_room
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import (
     LoginManager,
@@ -11,7 +11,6 @@ from flask_login import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-from flask_socketio import join_room
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "supersecret"
@@ -57,6 +56,22 @@ class Message(db.Model):
 
 class Chat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+
+    def other_user(self, current_user_id):
+        return (
+            db.session.query(User)
+            .join(ChatUser)
+            .filter(ChatUser.chat_id == self.id, User.id != current_user_id)
+            .first()
+        )
+
+    def participants(self):
+        return (
+            db.session.query(User)
+            .join(ChatUser)
+            .filter(ChatUser.chat_id == self.id)
+            .all()
+        )
 
 
 class ChatUser(db.Model):
@@ -115,12 +130,7 @@ def home():
             .first()
         )
 
-        other = (
-            db.session.query(User)
-            .join(ChatUser)
-            .filter(ChatUser.chat_id == chat.id, User.id != current_user.id)
-            .first()
-        )
+        other = chat.other_user(current_user.id)
 
         chat_data.append({
             "chat_id": chat.id,
@@ -130,7 +140,6 @@ def home():
         })
 
     return render_template("home.html", chats=chat_data)
-
 
 
 @app.route("/profile/<username>")
@@ -219,6 +228,7 @@ def new_chat():
     # GET → show user list
     users = User.query.filter(User.id != current_user.id).all()
     return render_template("new_chat.html", users=users)
+
 
 @app.route("/chat")
 @login_required
