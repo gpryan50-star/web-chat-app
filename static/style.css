@@ -417,19 +417,31 @@ input {
 }
 
 .goose-logo {
-    position: absolute;
-    top: 12px;
+    position: fixed;
+    top: 20px;
     right: 20px;
-    z-index: 1000;
+    z-index: 2000;
 }
 
 .goose-logo img {
     height: 55px;
-    width: auto;
+    width: 55px;
+    border-radius: 50%;
+    background: white;
+    padding: 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     cursor: pointer;
-    transition: transform 0.15s ease-in-out;
+    transition: transform 0.2s ease-in-out;
 }
 
 .goose-logo img:hover {
-    transform: scale(1.08);
+    animation: wobble 0.35s ease-in-out;
+}
+
+@keyframes wobble {
+    0%   { transform: rotate(0deg); }
+    25%  { transform: rotate(6deg); }
+    50%  { transform: rotate(-6deg); }
+    75%  { transform: rotate(4deg); }
+    100% { transform: rotate(0deg); }
 }
