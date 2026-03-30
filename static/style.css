@@ -416,24 +416,37 @@ input {
     margin-bottom: 15px;
 }
 
-.goose-logo {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 2000;
+.header {
+    padding: 15px;
+    font-size: 22px;
+    font-weight: bold;
+    background: white;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
+/* Container for logout + goose */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* space between logout and goose */
+}
+
+/* Goose styling */
 .goose-logo img {
-    height: 55px;
-    width: 55px;
+    height: 45px;
+    width: 45px;
     border-radius: 50%;
     background: white;
-    padding: 6px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    padding: 5px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
     cursor: pointer;
     transition: transform 0.2s ease-in-out;
 }
 
+/* Wobble animation */
 .goose-logo img:hover {
     animation: wobble 0.35s ease-in-out;
 }
