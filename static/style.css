@@ -415,3 +415,21 @@ input {
     color: var(--text);
     margin-bottom: 15px;
 }
+
+.goose-logo {
+    position: absolute;
+    top: 12px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.goose-logo img {
+    height: 55px;
+    width: auto;
+    cursor: pointer;
+    transition: transform 0.15s ease-in-out;
+}
+
+.goose-logo img:hover {
+    transform: scale(1.08);
+}
